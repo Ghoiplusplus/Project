@@ -1,1 +1,1 @@
-# Telegram client
+# Telegram client (Pavlik Kryatov)
