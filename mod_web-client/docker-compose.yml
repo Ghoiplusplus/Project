@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  web-client:
+    build: .
+    container_name: web-client-container
+    ports:
+      - "10800:10800"
+    restart: always
