@@ -1,0 +1,6 @@
+server:
+  port: 10800
+
+spring:
+  application:
+    name: "web-client"
