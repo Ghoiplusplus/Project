@@ -2,16 +2,25 @@ import os
 import asyncio
 import logging
 from aiogram import Dispatcher, Bot
-
+import redis
 from aiogram.types import BotCommand
-from sqlalchemy import URL
+
 
 from bot.commands.bot_commands import bot_commands
 from commands import *
 
-from db import BaseModel , create_async_engine, proceed_schemas, get_session_maker
 
-
+r = redis.Redis(host='127.0.0.1', port=6379, db=0)
+try:
+    info = r.info()
+    print(info['redis_version'])
+    response = r.ping()
+    if response:
+        print("Подключение успешно!")
+    else:
+        print("Не удалось подключиться к Redis.")
+except redis.exceptions.RedisError as e:
+    print(f"Ошибка: {e}")
 
 async def main() -> None:
     logging.basicConfig(level=logging.DEBUG)
@@ -25,18 +34,6 @@ async def main() -> None:
     bot = Bot(token=os.getenv('token'))
     await bot.set_my_commands(commands_for_bot)
     register_user_commands(dp)
-
-    postgres_url = URL.create(
-        "postgresql+asyncpg",
-        username=os.getenv('db_user'),
-        host="localhost",
-        database=os.getenv('db_name'),
-        port=os.getenv('db_port')
-    )
-
-    async_engine = create_async_engine(postgres_url)
-    session_maker = get_session_maker(async_engine)
-    await proceed_schemas(async_engine, BaseModel.metadata)
 
     await dp.start_polling(bot)
 
