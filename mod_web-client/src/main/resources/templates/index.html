@@ -1,0 +1,26 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Главная страница</title>
+</head>
+<body>
+<h1>Главная страница</h1>
+
+<!--
+  Через th:text мы выводим значение переменной 'message',
+  которую контроллер может положить в Model (например, model.addAttribute("message", "...");).
+  Если вы используете чистый HTML (без Thymeleaf), можно просто прописать текст вручную.
+-->
+<p th:text="${message}">Здесь будет отображаться сообщение</p>
+
+<!-- Форму делаем обычным GET-запросом на /login -->
+<form action="/login" method="get">
+    <p>Войти через:</p>
+    <button type="submit" name="type" value="github">GitHub</button>
+    <button type="submit" name="type" value="yandex">Яндекс ID</button>
+    <button type="submit" name="type" value="code">Код</button>
+</form>
+</body>
+</html>

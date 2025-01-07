@@ -4,3 +4,11 @@ server:
 spring:
   application:
     name: "web-client"
+  thymeleaf:
+    cache: false
+    enabled: true
+
+services:
+  auth-module: http://localhost:2228
+  main-module: http://localhost:8082
+
