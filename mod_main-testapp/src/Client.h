@@ -9,8 +9,23 @@
 #include <vector>
 #include <thread>
 
-#include "Token.h"
 
-#include "Func.h"
+enum class Resource {
+    Success,   // Успешный результат
+    Error,     // Ошибка
+    Users,     // Ресурс: Пользователи
+    Discipline, // Ресурс: Дисциплина
+    Questions, // Ресурс: Вопросы
+    Tests,     // Ресурс: Тесты
+    Attempt,   // Ресурс: Попытка
+    Answers    // Ресурс: Ответы
+};
+
+
+void beautyPrint(SOCKET clientSocket, const std::string& message);
+
 
 void handleClient(SOCKET clientSocket);
+
+
+Resource CheckToken(SOCKET clientSocket, char* message, int msgSize);
