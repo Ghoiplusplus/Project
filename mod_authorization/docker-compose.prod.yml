@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  app:
+    build: .
+    container_name: go_app
+    ports:
+      - "2228:2228"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/
+    depends_on:
+      - mongo
+
   mongo:
     image: mongo:latest
     container_name: mongo_db
