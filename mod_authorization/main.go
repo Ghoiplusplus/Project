@@ -130,7 +130,9 @@ func main() {
 			entry.Status.Refresh_token = refresh_token
 		}
 
-		return c.Redirect("http://localhost:10800/auth/callback?state=" + c.Query("state"))
+		const javaCallbackURL = "http://localhost:10800/auth/callback"
+
+		return c.Redirect().To(fmt.Sprintf("%s?state=%s", javaCallbackURL, c.Query("state")))
 	})
 
 	// обработка ответа от яндекса
@@ -191,7 +193,10 @@ func main() {
 			entry.Status.Access_token = jwt
 			entry.Status.Refresh_token = refresh_token
 		}
-		return c.Redirect("http://localhost:10800/auth/callback?state=" + c.Query("state"))
+
+		const javaCallbackURL = "http://localhost:10800/auth/callback"
+
+		return c.Redirect().To(fmt.Sprintf("%s?state=%s", javaCallbackURL, c.Query("state")))
 	})
 
 	app.Get("/code_cb", func(c fiber.Ctx) error {
