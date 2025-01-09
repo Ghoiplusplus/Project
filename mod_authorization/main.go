@@ -10,6 +10,7 @@ import (
 	"main/code_authentication"
 	"main/jwt_handler"
 	mongoDB "main/mongo-handler"
+	"os"
 
 	"time"
 
@@ -27,7 +28,7 @@ var (
 	response_map  = make(map[string]*classes.Pending_Request)
 	oauthConfig_G = classes.OAuth2_conf_github()
 	oauthConfig_Y = classes.OAuth2_conf_yandex()
-	clientDB, _   = mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017/"))
+	clientDB, _   = mongo.Connect(context.TODO(), options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	_             = clientDB.Database("userdb").Collection("users")
 	ctx, _        = context.WithTimeout(context.Background(), 2*time.Second)
 )
