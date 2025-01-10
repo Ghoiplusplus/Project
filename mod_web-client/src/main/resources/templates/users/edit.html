@@ -1,0 +1,26 @@
+<!-- src/main/resources/templates/users/edit.html -->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактировать Пользователя</title>
+    <meta charset="UTF-8" />
+</head>
+<body>
+<h1>Редактировать Пользователя</h1>
+<form th:action="@{|/users/${user.id}/edit|}" th:object="${user}" method="post">
+    <label for="firstName">Имя:</label>
+    <input type="text" id="firstName" name="firstName" th:field="*{firstName}" required /><br/><br/>
+
+    <label for="lastName">Фамилия:</label>
+    <input type="text" id="lastName" name="lastName" th:field="*{lastName}" required /><br/><br/>
+
+    <label for="middleName">Отчество:</label>
+    <input type="text" id="middleName" name="middleName" th:field="*{middleName}" /><br/><br/>
+
+    <button type="submit">Сохранить Изменения</button>
+</form>
+<br/>
+<a th:href="@{|/users/${user.id}|}"><button>Назад к информации о пользователе</button></a>
+</body>
+</html>

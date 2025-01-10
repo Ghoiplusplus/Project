@@ -1,0 +1,60 @@
+<!-- src/main/resources/templates/fragments/navbar.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+
+<!-- Объявляем фрагмент "navbar" -->
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">MyApp</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent" aria-controls="navbarContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Здесь блок, который разворачивается при клике на бургер-меню -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <!-- Выпадающий список "Пользователи" -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="usersDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Пользователи
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="usersDropdown">
+                        <li><a class="dropdown-item" href="/users">Список</a></li>
+                        <li><a class="dropdown-item" href="/users/add">Добавить</a></li>
+                        <!-- Добавьте дополнительные ссылки, если нужно -->
+                    </ul>
+                </li>
+
+                <!-- Выпадающий список "Дисциплины" -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="disciplinesDropdown"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Дисциплины
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="disciplinesDropdown">
+                        <li><a class="dropdown-item" href="/disciplines">Список</a></li>
+                        <li><a class="dropdown-item" href="/disciplines/add">Добавить</a></li>
+                        <!-- Аналогично, любые другие ссылки -->
+                    </ul>
+                </li>
+
+            </ul>
+
+            <!-- Кнопка выхода (Logout) -->
+            <div class="d-flex">
+                <a th:href="@{/logout}" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+</body>
+</html>
