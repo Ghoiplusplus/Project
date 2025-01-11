@@ -175,7 +175,7 @@ async def help_command(message: types.Message):
     help_text = """
 <b><i>Доступные команды:</i></b>\n
 /start - Начать работу с ботом
-/login - Авторизоваться в боте
+/login - Авторизоваться в боте через код
 /logout - Выйти из системы
 /show_tests - Показать список тестов
 /test_details id теста - Показать детали теста
