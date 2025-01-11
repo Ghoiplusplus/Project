@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"time"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -19,15 +19,15 @@ var (
 )
 
 type User struct {
-	Name           string   `bson:"name"`
-	Email          string   `bson:"email"`
-	Role           string   `bson:"role"` //Студент, преподаватель, админ TODO: сделать список разрешений для каждой роли
-	Refresh_Tokens []string `bson:"refresh_tokens"`
+	Name           string `bson:"name"`
+	Email          string `bson:"email"`
+	Role           string `bson:"permissions"` //Студент, преподаватель, админ TODO: сделать список разрешений для каждой роли
+	Refresh_Tokens string `bson:"refresh_token"`
 }
 
 type Payload struct {
 	Email string `bson:"email"`
-	Role  string `bson:"role"`
+	Role  string `bson:"permissions"`
 }
 
 var (
@@ -35,17 +35,20 @@ var (
 	Projection = bson.D{
 		{"_id", 0},
 		{"email", 1},
-		{"role", 1},
+		{"permissions", 1},
 	}
 )
 
 func NewUser(email string) (payload Payload, status string) {
 	rand.Seed(time.Now().UnixNano())
 	someid := rand.Intn(100000)
-	user.Name = fmt.Sprintf("Anon %d", someid)
-	user.Email = email
-	user.Role = "student"
-	user.Refresh_Tokens = make([]string, 0)
+	user := User{
+		Name:           fmt.Sprintf("Anon %d", someid),
+		Email:          email,
+		Role:           "Student",
+		Refresh_Tokens: "",
+	}
+	log.Println(user)
 
 	if err := Collection.FindOne(context.TODO(), bson.D{{"email", email}}, options.FindOne().SetProjection(Projection)).Decode(&payload); err == nil {
 		return payload, "Пользователь с такой почтой уже есть"
@@ -58,13 +61,17 @@ func NewUser(email string) (payload Payload, status string) {
 }
 
 func AddRefrToken(payload_rt string) {
-	filter := bson.D{{"refresh_tokens", bson.D{{"$size", 0}}}}
+	filter := bson.D{{"refresh_token", bson.D{{"$eq", ""}}}}
 	update := bson.D{
 		{"$set", bson.D{
-			{"refresh_tokens.0", payload_rt},
+			{"refresh_token", payload_rt},
 		}},
 	}
 	if res, err := Collection.UpdateOne(context.TODO(), filter, update); err == nil {
 		log.Println(res)
 	}
+}
+
+func UpdateRefrToken(refr_token string) {
+
 }
