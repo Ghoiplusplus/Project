@@ -1,0 +1,3 @@
+C:/Users/mak/Documents/gitproject/Project/mod_main-testapp/build/CMakeFiles/server.dir
+C:/Users/mak/Documents/gitproject/Project/mod_main-testapp/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/mak/Documents/gitproject/Project/mod_main-testapp/build/CMakeFiles/ZERO_CHECK.dir

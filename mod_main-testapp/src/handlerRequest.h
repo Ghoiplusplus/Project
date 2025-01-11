@@ -1,8 +1,12 @@
 #pragma once
+
 #include "checkToken.h"
+#include "PostgreSQL.h"
+
 #include <httplib.h>
 #include <jwt-cpp/jwt.h>
 #include <nlohmann/json.hpp>
+
 #include <iostream>
 #include <string>
 #include <vector>

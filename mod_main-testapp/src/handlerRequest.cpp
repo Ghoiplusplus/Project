@@ -2,6 +2,7 @@
 #include "handlerRequest.h"
 using namespace std;
 
+
 bool Unauthorized(httplib::Response& res, unordered_map<jwt::traits::kazuho_picojson::string_type, jwt::claim> permission)
 {
     if (permission.empty()) {
@@ -18,18 +19,61 @@ bool Unauthorized(httplib::Response& res, unordered_map<jwt::traits::kazuho_pico
 
 
 
-void AddUser(const httplib::Request& req, httplib::Response& res)
-{
+void AddUser (const httplib::Request& req, httplib::Response& res) {
+    if (req.body.empty()) {
+        res.status = 400; // Bad Request
+        res.set_content("Request body is empty", "text/plain");
+        return;
+    }
+
+    picojson::Value jsonData;
+    picojson::CharReaderBuilder reader;
+    string errs;
+
+    istringstream s(req.body);
+    if (!picojson::parseFromStream(reader, s, &jsonData, &errs)) {
+        res.status = 400; // Bad Request
+        res.set_content("Invalid picojson: " + errs, "text/plain");
+        return;
+    }
+
+    string last_name = jsonData["last_name"].asString();
+    string first_name = jsonData["first_name"].asString();
+    string middle_name = jsonData.get("middle_name", "").asString();
+    vector<string> roles;
+    for (const auto& role : jsonData["roles"]) {
+        roles.push_back(role.asString());
+    }
+    bool banned = jsonData.get("banned", false).asBool();
+
+    try {
+        pqxx::connection conn("host=127.0.0.1 dbname=db_module user=postgres password=M6771350ax");
+        pqxx::work txn(conn);
+
+        txn.exec0("INSERT INTO users (last_name, first_name, middle_name, roles, banned) VALUES (" +
+                  txn.quote(last_name) + ", " +
+                  txn.quote(first_name) + ", " +
+                  txn.quote(middle_name) + ", " +
+                  txn.quote(roles) + ", " +
+                  (banned ? "TRUE" : "FALSE") + ");");
+
+        txn.commit();
+        res.status = 201; // Created
+        res.set_content("User  added successfully", "text/plain");
+    } catch (const exception& e) {
+        res.status = 500; // Internal Server Error
+        res.set_content("Database error: " + string(e.what()), "text/plain");
+    }
 }
 void GetUserList(const httplib::Request& req, httplib::Response& res)
 {
     cout << "Get user-list:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     for (int i = 0; i < 10; i++)
         jsonRes["user" + to_string(i)] = i;
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetUserNamea(const httplib::Request& req, httplib::Response& res)
@@ -38,12 +82,12 @@ void GetUserNamea(const httplib::Request& req, httplib::Response& res)
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
     int id = stoi(req.matches[1]);
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["first_name"] = "first_name" + to_string(id);      
     jsonRes["last_name"] = "last_name" + to_string(id);       
     jsonRes["middle_name"] = "middle_name" + to_string(id);
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
 
     cout << "   End." << endl;
 }
@@ -54,7 +98,7 @@ void SetUserName(const httplib::Request& req, httplib::Response& res)
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
     
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
 
     string first_name = body["first_name"];  
     string last_name = body["last_name"];      
@@ -69,11 +113,11 @@ void GetUserCourses(const httplib::Request& req, httplib::Response& res)
     cout << "Get user courses:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
         jsonRes.push_back("Disc" + to_string(i));
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
 
 
     cout << "   End." << endl;
@@ -84,11 +128,11 @@ void GetUserGrades(const httplib::Request& req, httplib::Response& res)
     cout << "Get user grades:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
         jsonRes.push_back("5");
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetUserTests(const httplib::Request& req, httplib::Response& res)
@@ -96,11 +140,11 @@ void GetUserTests(const httplib::Request& req, httplib::Response& res)
     cout << "Get user tests:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
         jsonRes.push_back(to_string(i));
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
 
 
     cout << "   End." << endl;
@@ -111,11 +155,11 @@ void GetUserRoles(const httplib::Request& req, httplib::Response& res)
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
 
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 5; i++)
         jsonRes.push_back("Role" + to_string(i));
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
 
 
     cout << "   End." << endl;
@@ -134,9 +178,9 @@ void GetUserBlock(const httplib::Request& req, httplib::Response& res)
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
 
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["banned"] = false;
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 
@@ -163,16 +207,16 @@ void GetDisceplines(const httplib::Request& req, httplib::Response& res)
     cout << "Get disceplines:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
     {
-        nlohmann::json discepline;
+        picojson::picojson discepline;
         discepline["name"] = "DiscName" + to_string(i);
         discepline["description"] = "Description" + to_string(i);
         discepline["id"] = i;
         jsonRes.push_back(discepline);
     }
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetDisceplineInfo(const httplib::Request& req, httplib::Response& res)
@@ -187,12 +231,12 @@ void GetDisceplineInfo(const httplib::Request& req, httplib::Response& res)
      
 
      
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["name"] = "Disc" + id;
     jsonRes["description"] = "description....";
     jsonRes["prepod"] = "Prepod" + id;
 
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
 
 
     cout << "   End." << endl;
@@ -204,7 +248,7 @@ void SetDisceplineInfo(const httplib::Request& req, httplib::Response& res)
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;    
     string id = req.matches[1];
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
     string name = body["name"];
     string description = body["description"];
     cout << "   New name and description: " << name << ' ' << description << endl;
@@ -218,10 +262,10 @@ void GetDisceplineTestList(const httplib::Request& req, httplib::Response& res)
 
     string id = req.matches[1];
     cout << "   id: " << id << endl;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
         jsonRes.push_back("Test" + to_string(i));
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 
@@ -233,9 +277,9 @@ void GetDisceplineTestActive(const httplib::Request& req, httplib::Response& res
     string idDisc = req.matches[1];
     string idTest = req.matches[2];
     cout << "   Disc: " << idDisc << " Test: " << idTest << endl;
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["active"] = false;
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void SetDisceplineTestActivate(const httplib::Request& req, httplib::Response& res)
@@ -265,12 +309,12 @@ void AddDisceplineTest(const httplib::Request& req, httplib::Response& res)
     if (Unauthorized(res, permission)) return;
     string id = req.matches[1];
     cout << "   id: " << id << endl;
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
     string name = body["name"];
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["id"] = 1234;
     cout << "   Add new test \"" << name << "\" id: " << 1234 << endl;
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void DelDisceplineTest(const httplib::Request& req, httplib::Response& res)
@@ -290,10 +334,10 @@ void GetDisceplineUserList(const httplib::Request& req, httplib::Response& res)
     if (Unauthorized(res, permission)) return;
     string id = req.matches[1];
     cout << "id: " << id << endl;     
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
         jsonRes.push_back("User" + to_string(i));
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }  
 void AddDisceplineUser(const httplib::Request& req, httplib::Response& res)
@@ -321,7 +365,7 @@ void AddDiscepline(const httplib::Request& req, httplib::Response& res)
     cout << "Add discepline:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
     string name = body["name"];
     string description = body["description"];
     int idPrepod = stoi(string(body["id"]));
@@ -342,16 +386,16 @@ void GetQuestList(const httplib::Request& req, httplib::Response& res)
     cout << "Get quest list:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json jsonRes = nlohmann::json::array();
+    picojson::picojson jsonRes = picojson::picojson::array();
     for (int i = 0; i < 10; i++)
     {
-        nlohmann::json discepline;
+        picojson::picojson discepline;
         discepline["name"] = "quest name" + to_string(i);
         discepline["version"] = to_string(i);
         discepline["idAuthor"] = i;
         jsonRes.push_back(discepline);
     }
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetQuestInfo(const httplib::Request& req, httplib::Response& res)
@@ -362,14 +406,14 @@ void GetQuestInfo(const httplib::Request& req, httplib::Response& res)
     string idQuest = req.matches[1];
     string version = req.matches[2];
     cout << "   idQuest: " << idQuest << " version: " << version << endl;
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["name"] = "name_quest";
     jsonRes["description"] = "description";
-    jsonRes["options"] = nlohmann::json::array();
+    jsonRes["options"] = picojson::picojson::array();
     for (int i = 0; i < 5; i++)
         jsonRes["options"].push_back("opt" + to_string(i));
     jsonRes["correct_answer"] = 1;
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void SetQuestInfo(const httplib::Request& req, httplib::Response& res)
@@ -378,7 +422,7 @@ cout << "Set quest info:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;  
     int id = stoi(req.matches[1]);
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
     string name = body["name"];
     string description = body["description"];
     vector<string> options;
@@ -392,7 +436,7 @@ void AddQuest(const httplib::Request& req, httplib::Response& res)
     cout << "Add quest:" << endl;
     auto permission = CheckToken(req);
     if (Unauthorized(res, permission)) return;
-    nlohmann::json body = nlohmann::json::parse(req.body);
+    picojson::picojson body = picojson::picojson::parse(req.body);
     string name = body["name"];
     string description = body["description"];
     vector<string> options;
@@ -448,11 +492,11 @@ void GetQuestUsers(const httplib::Request& req, httplib::Response& res)
     if (Unauthorized(res, permission)) return;
     int idDisc = stoi(req.matches[1]);
     int idTest = stoi(req.matches[2]);
-    nlohmann::json jsonRes;
-    jsonRes["users"] = nlohmann::json::array();
+    picojson::picojson jsonRes;
+    jsonRes["users"] = picojson::picojson::array();
     for (int i = 0; i < 5; i++)
         jsonRes["users"].push_back("user" + to_string(i));
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetTestGreads(const httplib::Request& req, httplib::Response& res)
@@ -462,16 +506,16 @@ void GetTestGreads(const httplib::Request& req, httplib::Response& res)
     if (Unauthorized(res, permission)) return;
     int idDisc = stoi(req.matches[1]);
     int idTest = stoi(req.matches[2]);
-    nlohmann::json jsonRes;
-    jsonRes["users"] = nlohmann::json::array();
+    picojson::picojson jsonRes;
+    jsonRes["users"] = picojson::picojson::array();
     for (int i = 0; i < 5; i++)
     {
-        nlohmann::json user;
+        picojson::picojson user;
         user["grade"] = 100;
         user["id"] = i;
         jsonRes["users"].push_back(user);
     }
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void GetTestAnswers(const httplib::Request& req, httplib::Response& res)
@@ -481,18 +525,18 @@ void GetTestAnswers(const httplib::Request& req, httplib::Response& res)
     if (Unauthorized(res, permission)) return;
     int idDisc = stoi(req.matches[1]);
     int idTest = stoi(req.matches[2]);
-    nlohmann::json jsonRes;
-    jsonRes["users"] = nlohmann::json::array();
+    picojson::picojson jsonRes;
+    jsonRes["users"] = picojson::picojson::array();
     for (int i = 0; i < 5; i++)
     {
-        nlohmann::json user;
-        user["answer"] = nlohmann::json::array();
+        picojson::picojson user;
+        user["answer"] = picojson::picojson::array();
         for (int j = 5; j < 5; j++)
             user["answer"].push_back(i);
         user["id"] = i;
         jsonRes["users"].push_back(user);
     }
-    res.set_content(jsonRes.dump(), "application/json");
+    res.set_content(jsonRes.dump(), "application/picojson");
     cout << "   End." << endl;
 }
 void AddAttempt(const httplib::Request& req, httplib::Response& res)
@@ -549,7 +593,7 @@ void GetAnswer(const httplib::Request& req, httplib::Response& res)
     int idDisc = stoi(req.matches[1]);
     int idTest = stoi(req.matches[2]);
     int idQest = stoi(req.matches[3]);
-    nlohmann::json jsonRes;
+    picojson::picojson jsonRes;
     jsonRes["id"] = 0;
     jsonRes["answer"] = -1;
     cout << "   End." << endl;

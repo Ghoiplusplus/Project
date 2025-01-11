@@ -1,12 +1,9 @@
-
 #pragma once
-
+#include <jwt-cpp/jwt.h>
+#include <httplib.h>
 #include <chrono>
 #include <string>
 #include <iostream>
-#include <jwt-cpp/jwt.h>
-#include <string>
-#include <httplib.h>
 using namespace std;
 inline string findToken(const httplib::Request& req)
 {
