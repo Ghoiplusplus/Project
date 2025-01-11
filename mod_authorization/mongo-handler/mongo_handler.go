@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"time"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -21,13 +21,13 @@ var (
 type User struct {
 	Name           string   `bson:"name"`
 	Email          string   `bson:"email"`
-	Role           string   `bson:"role"` //Студент, преподаватель, админ TODO: сделать список разрешений для каждой роли
+	Role           string   `bson:"permissions"` //Студент, преподаватель, админ TODO: сделать список разрешений для каждой роли
 	Refresh_Tokens []string `bson:"refresh_tokens"`
 }
 
 type Payload struct {
 	Email string `bson:"email"`
-	Role  string `bson:"role"`
+	Role  string `bson:"permissions"`
 }
 
 var (

@@ -5,6 +5,7 @@ import (
 	"main/handlers"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 var (
@@ -13,6 +14,10 @@ var (
 
 func main() {
 	builder.Buildpage(app)
+
+	app.Use(logger.New(logger.Config{
+		Format: "[${ip}]:${port} ${status} - ${method} ${path}\n",
+	}))
 
 	app.Get("/login", handlers.Login)                     // приходит запрос авторизации
 	app.Get("/github_oauth_cb", handlers.Github_oauth_cb) // обработка ответа от github
