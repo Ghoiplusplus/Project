@@ -35,7 +35,7 @@ func main() {
 	app.Get("/yandex_oauth_cb", handlers.Yandex_oauth_cb)       // обработка ответа от яндекса
 	app.Get("/code_cb", handlers.Code_cb)                       // обработка запроса авторизации через код
 	app.Get("/response/:state", handlers.Response)              // статусы пользователя
-	app.Get("/api/newjwtpair/:refr_token", handlers.newjwtpair) // запрос на выдачу новой пары токенов
+	app.Get("/api/newjwtpair/:refr_token", handlers.Newjwtpair) // запрос на выдачу новой пары токенов
 
 	app.Listen(":2228", fiber.ListenConfig{
 		EnablePrefork:     true,

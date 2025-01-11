@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"log"
-	mongo_handler "main/mongo-handler"
+	"main/classes"
 	"os"
 	"time"
 
@@ -12,11 +12,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
-
-type Payload_RT struct {
-	Email string    `json:"email"`
-	Exp   time.Time `json:"exp"`
-}
 
 type Permissions struct {
 	jwt.RegisteredClaims
@@ -88,10 +83,10 @@ var (
 	secret = []byte(os.Getenv("JWT_SECRET"))
 )
 
-func CreateJWT_Pair(payload_in mongo_handler.Payload) (string, string) {
+func CreateJWT_Pair(payload_in classes.Payload) (string, string) {
 	var (
 		Payload_AT = Permissions_Student()
-		Payload_RT = Payload_RT{
+		Payload_RT = classes.Payload_RT{
 			Email: payload_in.Email,
 			Exp:   time.Now().Add(7 * 24 * time.Hour),
 		}

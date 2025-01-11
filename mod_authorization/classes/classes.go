@@ -91,3 +91,13 @@ func OAuth2_conf_yandex() (c oauth2.Config) {
 	c.Endpoint = yandex.Endpoint
 	return c
 }
+
+type Payload_RT struct {
+	Email string    `json:"email"`
+	Exp   time.Time `json:"exp"`
+}
+
+type Payload struct {
+	Email string `bson:"email"`
+	Role  string `bson:"permissions"`
+}

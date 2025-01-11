@@ -2,12 +2,17 @@ package mongo_handler
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
+	"main/classes"
+	"main/jwt_handler"
 	"math/rand"
 	"os"
 	"time"
 
+	"github.com/gofiber/fiber/v3"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -19,15 +24,10 @@ var (
 )
 
 type User struct {
-	Name           string `bson:"name"`
-	Email          string `bson:"email"`
-	Role           string `bson:"permissions"` //Студент, преподаватель, админ TODO: сделать список разрешений для каждой роли
-	Refresh_Tokens string `bson:"refresh_token"`
-}
-
-type Payload struct {
-	Email string `bson:"email"`
-	Role  string `bson:"permissions"`
+	Name          string `bson:"name"`
+	Email         string `bson:"email"`
+	Role          string `bson:"permissions"` //Студент, преподаватель, админ
+	Refresh_Token string `bson:"refresh_token"`
 }
 
 var (
@@ -39,14 +39,14 @@ var (
 	}
 )
 
-func NewUser(email string) (payload Payload, status string) {
+func NewUser(email string) (payload classes.Payload, status string) {
 	rand.Seed(time.Now().UnixNano())
 	someid := rand.Intn(100000)
 	user := User{
-		Name:           fmt.Sprintf("Anon %d", someid),
-		Email:          email,
-		Role:           "Student",
-		Refresh_Tokens: "",
+		Name:          fmt.Sprintf("Anon %d", someid),
+		Email:         email,
+		Role:          "Student",
+		Refresh_Token: "",
 	}
 	log.Println(user)
 
@@ -72,6 +72,34 @@ func AddRefrToken(payload_rt string) {
 	}
 }
 
-func UpdateRefrToken(refr_token string) {
-
+func UpdateTokenPair(refr_token string) (access_token string, refresh_token string, status error) {
+	user := User{}
+	payload_rt := classes.Payload_RT{}
+	if err := Collection.FindOne(context.TODO(), bson.D{{"refresh_token", refr_token}}).Decode(&user); err == nil {
+		decoded_token_base64, _ := base64.StdEncoding.DecodeString(user.Refresh_Token)
+		if err := json.Unmarshal(decoded_token_base64, &payload_rt); err != nil {
+			log.Fatalf("При парсинге произошла ошибка")
+		}
+		if payload_rt.Exp.Before(time.Now()) {
+			status = fiber.ErrUnauthorized
+			return access_token, refresh_token, status
+		}
+		access_token, refresh_token := jwt_handler.CreateJWT_Pair(classes.Payload{
+			Email: user.Email,
+			Role:  user.Role,
+		})
+		_, err := Collection.UpdateOne(context.TODO(), bson.D{{"refresh_token", refr_token}}, bson.D{
+			{"$set", bson.D{
+				{"refresh_token", refresh_token},
+			}},
+		})
+		if err != nil {
+			log.Printf("При обновление токена в БД произошла ошибка: %d\n", err)
+		}
+		status = nil
+		return access_token, refresh_token, status
+	} else {
+		status = fiber.ErrNotFound
+		return access_token, refresh_token, status
+	}
 }

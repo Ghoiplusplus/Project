@@ -215,3 +215,15 @@ func Code_cb(c fiber.Ctx) error {
 	code := code_authentication.NewCode(c.Query("state"))
 	return c.SendString(code)
 }
+
+func Newjwtpair(c fiber.Ctx) error {
+	refresh_token := c.Params("refr_token")
+	if access_token, refresh_token, err := mongoDB.UpdateTokenPair(refresh_token); err == nil {
+		return c.JSON(fiber.Map{
+			"Access Token":  access_token,
+			"Refresh Token": refresh_token,
+		}, "application/problem+json")
+	} else {
+		return err
+	}
+}
