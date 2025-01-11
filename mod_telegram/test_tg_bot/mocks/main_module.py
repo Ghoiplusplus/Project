@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 # данные для тестов
 mock_tests = [
     {"id": 1, "name": "Тест по математике", "description": 'id 1'},
-    {"id": 2, "name": "Тест по истории", "description": 'id 2'},
+    {"id": 2, "name": "Тест по другому предмету", "description": 'id 2'},
 ]
 
 mock_questions = {
