@@ -1,0 +1,27 @@
+<!-- src/main/resources/templates/users/view.html -->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Просмотр Пользователя</title>
+    <meta charset="UTF-8" />
+</head>
+<body>
+<h1>Информация о Пользователе</h1>
+<p><strong>ID:</strong> <span th:text="${user.id}">1</span></p>
+<p><strong>Имя:</strong> <span th:text="${user.firstName}">Имя</span></p>
+<p><strong>Фамилия:</strong> <span th:text="${user.lastName}">Фамилия</span></p>
+<p><strong>Отчество:</strong> <span th:text="${user.middleName}">Отчество</span></p>
+<p><strong>Заблокирован:</strong> <span th:text="${user.banned}">false</span></p>
+
+<form th:action="@{|/users/${user.id}/block|}" method="post" style="display: inline;">
+    <button type="submit">Заблокировать</button>
+</form>
+
+<form th:action="@{|/users/${user.id}/unblock|}" method="post" style="display: inline;">
+    <button type="submit">Разблокировать</button>
+</form>
+<br/><br/>
+<a href="/users"><button>Назад к списку</button></a>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!-- src/main/resources/templates/users/add.html -->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Добавить Пользователя</title>
+    <meta charset="UTF-8" />
+</head>
+<body>
+<h1>Добавить Нового Пользователя</h1>
+<form th:action="@{/users/add}" th:object="${user}" method="post">
+    <label for="firstName">Имя:</label>
+    <input type="text" id="firstName" name="firstName" th:field="*{firstName}" required /><br/><br/>
+
+    <label for="lastName">Фамилия:</label>
+    <input type="text" id="lastName" name="lastName" th:field="*{lastName}" required /><br/><br/>
+
+    <label for="middleName">Отчество:</label>
+    <input type="text" id="middleName" name="middleName" th:field="*{middleName}" /><br/><br/>
+
+    <button type="submit">Сохранить</button>
+</form>
+<br/>
+<a href="/users"><button>Назад к списку</button></a>
+</body>
+</html>
