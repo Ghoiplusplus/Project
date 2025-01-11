@@ -185,11 +185,16 @@ func Response(c fiber.Ctx) error {
 	entry, exist := response_map[state]
 
 	if !exist {
+		c.SendString("Такого токена не существует")
 		return c.SendStatus(404)
 	}
 
 	if !entry.Status.Recevied {
-		c.Redirect().To("/")
+		if entry.Expires_in.Before(time.Now()) {
+			c.SendString("Срок действия токена истек")
+			return c.SendStatus(401)
+		}
+		c.SendString("Ответ от пользователя не получен")
 		return c.SendStatus(102)
 	}
 
